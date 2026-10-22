@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QRoot | Scan a Tree, Know its Story</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f8f3;
+            color: #173b29;
+        }
+
+        /* ================= NAVBAR ================= */
+
+        nav {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 22px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+        }
+
+        .logo {
+            color: white;
+            font-size: 25px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .logo span {
+            color: #b9e8b8;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            align-items: center;
+        }
+
+        .nav-links a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .nav-button {
+            padding: 11px 20px;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.16);
+            border: 1px solid rgba(255,255,255,0.35);
+            backdrop-filter: blur(10px);
+        }
+
+        /* ================= HERO ================= */
+
+        .hero {
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+
+            background:
+                linear-gradient(
+                    90deg,
+                    rgba(8,35,23,0.88),
+                    rgba(8,35,23,0.55),
+                    rgba(8,35,23,0.25)
+                ),
+                url("https://images.unsplash.com/photo-1441974231531-c6227db76b6e?auto=format&fit=crop&w=2000&q=85");
+
+            background-size: cover;
+            background-position: center;
+        }
+
+        .hero-content {
+            width: 90%;
+            max-width: 1200px;
+            margin: auto;
+            padding-top: 50px;
+            color: white;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 9px 16px;
+            border-radius: 30px;
+            background: rgba(190,230,190,0.14);
+            border: 1px solid rgba(210,245,210,0.3);
+            backdrop-filter: blur(10px);
+            font-size: 13px;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 {
+            max-width: 760px;
+            font-size: clamp(48px, 7vw, 86px);
+            line-height: 0.98;
+            letter-spacing: -4px;
+            margin-bottom: 25px;
+        }
+
+        .hero h1 span {
+            color: #b9e8b8;
+        }
+
+        .hero-description {
+            max-width: 600px;
+            font-size: 18px;
+            line-height: 1.7;
+            color: #e0ebe1;
+            margin-bottom: 35px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .primary-button,
+        .secondary-button {
+            text-decoration: none;
+            padding: 15px 25px;
+            border-radius: 30px;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .primary-button {
+            background: #b9e8b8;
+            color: #173b29;
+        }
+
+        .primary-button:hover {
+            transform: translateY(-3px);
+            background: #d0f0cf;
+        }
+
+        .secondary-button {
+            color: white;
+            border: 1px solid rgba(255,255,255,0.45);
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(10px);
+        }
+
+        .secondary-button:hover {
+            background: rgba(255,255,255,0.18);
+        }
+
+        /* ================= FLOATING CARD ================= */
+
+        .tree-card {
+            position: absolute;
+            right: 7%;
+            bottom: 10%;
+            width: 250px;
+            padding: 20px;
+            border-radius: 22px;
+            background: rgba(255,255,255,0.13);
+            border: 1px solid rgba(255,255,255,0.25);
+            backdrop-filter: blur(18px);
+            color: white;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+        }
+
+        .tree-card small {
+            color: #cce5ce;
+        }
+
+        .tree-card h3 {
+            margin: 7px 0;
+        }
+
+        .tree-card p {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #d8e6d9;
+        }
+
+        .qr-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        /* ================= STATS ================= */
+
+        .stats {
+            width: 86%;
+            max-width: 1100px;
+            margin: -60px auto 0;
+            position: relative;
+            z-index: 5;
+
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 15px 50px rgba(24,59,42,0.12);
+            overflow: hidden;
+        }
+
+        .stat {
+            padding: 30px;
+            text-align: center;
+            border-right: 1px solid #e4ebe4;
+        }
+
+        .stat:last-child {
+            border-right: none;
+        }
+
+        .stat h2 {
+            font-size: 34px;
+            color: #2f7047;
+            margin-bottom: 5px;
+        }
+
+        .stat p {
+            color: #6c7e72;
+            font-size: 14px;
+        }
+
+        /* ================= SECTION ================= */
+
+        .section {
+            padding: 100px 8%;
+            text-align: center;
+        }
+
+        .section-tag {
+            color: #4c8a5c;
+            font-size: 13px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 12px;
+        }
+
+        .section h2 {
+            font-size: 42px;
+            margin-bottom: 15px;
+        }
+
+        .section-description {
+            color: #687a6d;
+            max-width: 600px;
+            margin: auto;
+            line-height: 1.7;
+        }
+
+        /* ================= HOW IT WORKS ================= */
+
+        .steps {
+            max-width: 1000px;
+            margin: 55px auto 0;
+
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        .step {
+            padding: 30px;
+            background: white;
+            border-radius: 22px;
+            text-align: left;
+            box-shadow: 0 10px 35px rgba(30,70,45,0.07);
+        }
+
+        .step-number {
+            font-size: 13px;
+            color: #4d8b5f;
+            font-weight: bold;
+        }
+
+        .step h3 {
+            margin: 12px 0;
+            font-size: 21px;
+        }
+
+        .step p {
+            color: #6b7c70;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* ================= CTA ================= */
+
+        .cta {
+            width: 84%;
+            margin: 20px auto 100px;
+            padding: 70px 30px;
+            border-radius: 30px;
+            text-align: center;
+
+            background:
+                linear-gradient(
+                    135deg,
+                    #173b29,
+                    #326d46
+                );
+
+            color: white;
+        }
+
+        .cta h2 {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .cta p {
+            color: #d5e4d7;
+            margin-bottom: 30px;
+        }
+
+        /* ================= FOOTER ================= */
+
+        footer {
+            padding: 30px 8%;
+            background: #10291d;
+            color: #aebfb1;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        /* ================= MOBILE ================= */
+
+        @media (max-width: 800px) {
+
+            .nav-links a:not(.nav-button) {
+                display: none;
+            }
+
+            .hero {
+                min-height: 850px;
+            }
+
+            .hero h1 {
+                letter-spacing: -2px;
+            }
+
+            .tree-card {
+                display: none;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+                margin-top: -30px;
+            }
+
+            .stat {
+                border-right: none;
+                border-bottom: 1px solid #e4ebe4;
+            }
+
+            .stat:last-child {
+                border-bottom: none;
+            }
+
+            .steps {
+                grid-template-columns: 1fr;
+            }
+
+            .section h2 {
+                font-size: 32px;
+            }
+
+            .cta {
+                width: 90%;
+            }
+
+            .cta h2 {
+                font-size: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVIGATION -->
+
+    <nav>
+        <div class="logo">🌿 QR<span>oot</span></div>
+
+        <div class="nav-links">
+            <a href="#how">How It Works</a>
+            <a href="#about">About</a>
+            
+        </div>
+    </nav>
+
+
+    <!-- HERO -->
+
+    <section class="hero">
+
+        <div class="hero-content">
+
+            <div class="tag">
+                🌱 Smart Campus • Environmental Awareness
+            </div>
+
+            <h1>
+                Every tree has a
+                <span>story.</span>
+            </h1>
+
+            <p class="hero-description">
+                Discover the trees around your campus.
+                Scan a QR code, explore their identity,
+                learn their importance and connect with nature.
+            </p>
+
+            <div class="buttons">
+
+                <a href="trees-backup.html" class="primary-button">
+    Explore QRoot →
+</a>
+
+                <a href="qr.html" class="secondary-button">
+                    Scan QR Code
+                </a>
+
+            </div>
+
+        </div>
+
+
+        <!-- FLOATING TREE CARD -->
+
+        <div class="tree-card">
+
+            <div class="qr-icon">🌳</div>
+
+            <small>QRoot • Campus Tree</small>
+
+            <h3>Discover a Tree</h3>
+
+            <p>
+                Scan the QR code near a tree
+                to discover its name, uses,
+                importance and interesting facts.
+            </p>
+
+        </div>
+
+    </section>
+
+
+    <!-- STATS -->
+
+    <div class="stats">
+
+        <div class="stat">
+            <h2>🌱 136</h2>
+            <p>Trees</p>
+        </div>
+
+        <div class="stat">
+            <h2>🌿22</h2>
+            <p>Species</p>
+        </div>
+
+        <div class="stat">
+            <h2>📍7</h2>
+            <p>Campus Zones</p>
+        </div>
+
+    </div>
+
+
+    <!-- HOW IT WORKS -->
+
+    <section class="section" id="how">
+
+        <div class="section-tag">
+            Simple & Smart
+        </div>
+
+        <h2>How QRoot works</h2>
+
+        <p class="section-description">
+            Technology makes it easier to discover and
+            understand the trees around us.
+        </p>
+
+
+        <div class="steps">
+
+            <div class="step">
+
+                <div class="step-number">01 — FIND</div>
+
+                <h3>Find a Tree 🌳</h3>
+
+                <p>
+                    Walk around the campus and
+                    find a QRoot QR code near
+                    a tree.
+                </p>
+
+            </div>
+
+
+            <div class="step">
+
+                <div class="step-number">02 — SCAN</div>
+
+                <h3>Scan the QR 📱</h3>
+
+                <p>
+                    Use your phone camera to scan
+                    the QR code attached near
+                    the tree.
+                </p>
+
+            </div>
+
+
+            <div class="step">
+
+                <div class="step-number">03 — DISCOVER</div>
+
+                <h3>Discover its Story 🌱</h3>
+
+                <p>
+                    Learn the tree's name,
+                    uses, environmental importance
+                    and interesting facts.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ABOUT -->
+
+    <section class="section" id="about">
+
+        <div class="section-tag">
+            Our Purpose
+        </div>
+
+        <h2>
+            Technology meets nature.
+        </h2>
+
+        <p class="section-description">
+            QRoot uses simple technology to make
+            information about campus trees accessible
+            to students and visitors while encouraging
+            environmental awareness and conservation.
+        </p>
+
+    </section>
+
+
+    <!-- CTA -->
+
+    <section class="cta">
+
+        <h2>See a tree. Scan it. Know its story.</h2>
+
+        <p>
+            Start exploring the living environment
+            around your campus.
+        </p>
+
+        <a href="trees-backup.html" class="primary-button">
+    Explore Campus Trees →
+</a>
+
+    </section>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+        © 2026 QRoot • Scan a Tree, Know its Story 🌿
+    </footer>
+
+</body>
+</html>

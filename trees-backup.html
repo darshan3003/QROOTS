@@ -1,0 +1,5650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>QRoot | Scan a Tree, Know its Story</title>
+
+    <style>
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f8f3;
+            color: #173b29;
+        }
+
+        /* NAVBAR */
+
+        nav {
+            padding: 20px 7%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #173b29;
+        }
+
+        .logo {
+            color: white;
+            font-size: 25px;
+            font-weight: bold;
+        }
+
+        .logo span {
+            color: #b9e8b8;
+        }
+
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        /* HEADER */
+
+        .page-header {
+            padding: 80px 8% 55px;
+            text-align: center;
+        }
+
+        .tag {
+            color: #4d8b5f;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .page-header h1 {
+            font-size: clamp(40px, 6vw, 65px);
+            letter-spacing: -2px;
+            margin-bottom: 15px;
+        }
+
+        .page-header p {
+            max-width: 600px;
+            margin: auto;
+            color: #687a6d;
+            line-height: 1.7;
+        }
+
+        /* SEARCH */
+
+        .search-box {
+            width: 86%;
+            max-width: 700px;
+            margin: 0 auto 50px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 17px 22px;
+            border: none;
+            outline: none;
+            border-radius: 30px;
+            background: white;
+            box-shadow: 0 10px 35px rgba(30,70,45,0.08);
+            font-size: 15px;
+            position: relative;
+            text-transform: uppercase;
+        }
+
+        /* TREE GRID */
+
+        .tree-grid {
+            width: 86%;
+            max-width: 1200px;
+            margin: auto auto 100px;
+
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+        }
+
+        /* TREE CARD */
+
+        .tree-card {
+            background: white;
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 12px 40px rgba(30,70,45,0.08);
+            transition: 0.3s;
+        }
+
+        .tree-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 50px rgba(30,70,45,0.14);
+        }
+
+        .tree-image {
+            height: 220px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .tree-content {
+            padding: 25px;
+        }
+
+        .tree-number {
+            font-size: 12px;
+            color: #4d8b5f;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .tree-content h2 {
+            margin: 8px 0 4px;
+            font-size: 25px;
+        }
+
+        .scientific-name {
+            color: #78877d;
+            font-style: italic;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+
+        .tree-description {
+            color: #65766a;
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .view-button {
+            display: inline-block;
+            padding: 11px 18px;
+            border-radius: 25px;
+            background: #e8f2e8;
+            color: #2f7047;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .view-button:hover {
+            background: #d5e9d6;
+        }
+
+        /* FOOTER */
+
+        footer {
+            padding: 30px;
+            background: #10291d;
+            color: #aebfb1;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        /* MOBILE */
+
+        @media (max-width: 850px) {
+
+            .tree-grid {
+                grid-template-columns: 1fr;
+                max-width: 500px;
+            }
+
+        }
+
+        .suggestion-box {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 8px;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(30,70,45,0.12);
+        overflow: hidden;
+        z-index: 100;
+        display: none;
+        }
+
+        .suggestion {
+        padding: 14px 20px;
+        cursor: pointer;
+        font-weight: bold;
+        color: #2f7047;
+        }
+
+        .suggestion:hover {
+        background: #e8f2e8;
+        }
+
+        .tree-suggestion {
+            padding: 15px 20px;
+            cursor: pointer;
+            border-bottom: 1px solid #edf2ed;
+        }
+
+        .tree-suggestion:hover {
+            background: #e8f2e8;
+        }
+
+        .suggestion-id {
+            color: #4d8b5f;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .suggestion-name {
+            margin-top: 4px;
+            font-size: 17px;
+            font-weight: bold;
+            color: #173b29;
+        }
+
+        .suggestion-scientific {
+            margin-top: 3px;
+            font-size: 12px;
+            font-style: italic;
+            color: #78877d;
+        }       
+
+        .search-box {
+            position: relative;
+        }
+
+        .suggestion-box {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            width: 100%;
+            max-height: 500px;
+            overflow-y: auto;
+            background: white;
+            border-radius: 20px;
+            padding: 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+        }
+
+        .search-suggestion {
+            width: 100%;
+            margin: 0 0 15px 0;
+            cursor: pointer;
+        }
+
+        .search-suggestion:last-child {
+            margin-bottom: 0;
+        }
+
+        .search-suggestion:hover {
+            transform: translateY(-2px);
+        }
+
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+
+    <nav>
+
+        <div class="logo">
+            🌿 QR<span>oot</span>
+        </div>
+
+        <a href="index.html">
+            ← Back to Home
+        </a>
+
+    </nav>
+
+
+    <!-- PAGE HEADER -->
+
+    <section class="page-header">
+
+        <div class="tag">
+            Campus Explorer
+        </div>
+
+        <h1>
+            Meet the trees.
+        </h1>
+
+        <p>
+            Explore the trees around your campus and
+            discover their names, stories, importance
+            and interesting facts.
+        </p>
+
+    </section>
+
+
+    <!-- SEARCH -->
+
+    <div class="search-box">
+
+        <input
+            type="text"
+            placeholder="🔍 Enter Tree ID (e.g. KBT001)"
+            maxlength="6"
+        >
+
+    </div>
+
+
+    <!-- TREE CARDS -->
+
+    <section class="tree-grid">
+
+
+        <!-- KBT 001 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT001
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT001" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 002 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT002
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT002" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 003 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT003
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT003" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 004 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT004
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT004" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 005 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT005
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT005" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 006 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT006
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT006" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 007 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT007
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT007" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 008 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT008
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT008" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 009 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT009
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT009" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 010 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT010
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT010" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 011 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT011
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT011" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 012 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT012
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT012" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 013 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT013
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT013" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 014 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT014
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT014" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 015 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT015
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT015" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 016 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT016
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT016" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 017 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT017
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT017" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 018 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT018
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT018" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 019 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT019
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT019" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 020 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT020
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT020" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 021 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT021
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT021" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 022 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT022
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT022" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 023 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT023
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT023" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 024 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT024
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT024" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 025 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT025
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT025" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- KBT 026 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT026
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT026" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 027 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT027
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT027" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 028 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT028
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT028" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 029 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/badam.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT029
+                </div>
+
+                <h2>Badam</h2>
+
+                <div class="scientific-name">
+                    Terminalia catappa
+                </div>
+
+                <p class="tree-description">
+                    A widely planted ornamental tree
+                    known for its broad canopy and
+                    striking foliage.
+                </p>
+
+                <a href="tree-backup.html?id=KBT029" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 030 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/gulmohar.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT030
+                </div>
+
+                <h2>Gulmohar Tree</h2>
+
+                <div class="scientific-name">
+                    Delonix regia
+                </div>
+
+                <p class="tree-description">
+                    Gulmohar is a medium-sized,
+                    fast-growing ornamental tree famous for its wide,
+                    umbrella-shaped canopy and brilliant red-orange flowers.
+                    It is commonly planted along roads, in gardens, parks and educational institutions.
+                    Its spreading branches provide shade, while its colourful flowers make the tree
+                    especially attractive during the flowering season.
+                    It is also known as the Flame Tree or Royal Poinciana.
+
+                </p>
+
+               <a href="tree-backup.html?id=KBT030" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 031 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/gulmohar.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT031
+                </div>
+
+                <h2>Gulmohar Tree</h2>
+
+                <div class="scientific-name">
+                    Delonix regia
+                </div>
+
+                <p class="tree-description">
+                    Gulmohar is a medium-sized,
+                    fast-growing ornamental tree famous for its wide,
+                    umbrella-shaped canopy and brilliant red-orange flowers.
+                    It is commonly planted along roads, in gardens, parks and educational institutions.
+                    Its spreading branches provide shade, while its colourful flowers make the tree
+                    especially attractive during the flowering season.
+                    It is also known as the Flame Tree or Royal Poinciana.
+
+                </p>
+
+               <a href="tree-backup.html?id=KBT031" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 032 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/gulmohar.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT032
+                </div>
+
+                <h2>Gulmohar Tree</h2>
+
+                <div class="scientific-name">
+                    Delonix regia
+                </div>
+
+                <p class="tree-description">
+                    Gulmohar is a medium-sized,
+                    fast-growing ornamental tree famous for its wide,
+                    umbrella-shaped canopy and brilliant red-orange flowers.
+                    It is commonly planted along roads, in gardens, parks and educational institutions.
+                    Its spreading branches provide shade, while its colourful flowers make the tree
+                    especially attractive during the flowering season.
+                    It is also known as the Flame Tree or Royal Poinciana.
+
+                </p>
+
+               <a href="tree-backup.html?id=KBT032" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 033 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('images/gulmohar.jpg');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT033
+                </div>
+
+                <h2>Gulmohar Tree</h2>
+
+                <div class="scientific-name">
+                    Delonix regia
+                </div>
+
+                <p class="tree-description">
+                    Gulmohar is a medium-sized,
+                    fast-growing ornamental tree famous for its wide,
+                    umbrella-shaped canopy and brilliant red-orange flowers.
+                    It is commonly planted along roads, in gardens, parks and educational institutions.
+                    Its spreading branches provide shade, while its colourful flowers make the tree
+                    especially attractive during the flowering season.
+                    It is also known as the Flame Tree or Royal Poinciana.
+
+                </p>
+
+               <a href="tree-backup.html?id=KBT033" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 034 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT034
+                </div>
+
+                <h2>Saag/Treak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT034" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 035 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT035
+                </div>
+
+                <h2>Saag/Treake</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT035" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 036 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT036
+                </div>
+
+                <h2>Saag/Treak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT036" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 037 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT037
+                </div>
+
+                <h2>Saag/Treak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT037" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 038 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT038
+                </div>
+
+                <h2>Saag/Treak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT038" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 039 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT039
+                </div>
+
+                <h2>Saag/Treak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT039" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 040 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT040
+                </div>
+
+                <h2>Saag/Treak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT040" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 041 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT041
+                </div>
+
+                <h2>Saag/Treak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT041" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 042 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT042
+                </div>
+
+                <h2>Saag/Treak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT042" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 043 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT043
+                </div>
+
+                <h2>Saag/Treak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT043" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 044 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT044
+                </div>
+
+                <h2>Chafa</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT044" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 045 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT045
+                </div>
+
+                <h2>Chafa</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT045" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 046 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT046
+                </div>
+
+                <h2>Chafa</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT046" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 047 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT047
+                </div>
+
+                <h2>Chafa</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT047" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 048 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT048
+                </div>
+
+                <h2>Chafa</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT048" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 049 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT049
+                </div>
+
+                <h2>Chafa</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT049" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 050 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT050
+                </div>
+
+                <h2>Chafa</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT050" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 051 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT051
+                </div>
+
+                <h2>Chafa</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT051" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 052 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT052
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT052" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 053 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT053
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT053" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 054 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT054
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT054" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 055 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT055
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT055" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 056 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT056
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT056" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 057 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT057
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT057" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 058 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT058
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT058" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 059 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT059
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT059" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 060 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT060
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT060" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 061 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT061
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT061" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 062 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT062
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT062" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 063 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT063
+                </div>
+
+                <h2>Silver Oak</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT063" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 064 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT064
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT064" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 065 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT065
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT065" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 066 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT066
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT066" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 067 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT067
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT067" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 068 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT068
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT068" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 069 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT069
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT069" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 070 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT070
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT070" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 071 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT071
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT071" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 072 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT072
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT072" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 073 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT073
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT073" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 074 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT074
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT074" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 075 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT075
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT075" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 076 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT076
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT076" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 077 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT077
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT077" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 078 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT078
+                </div>
+
+                <h2>Palm Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT078" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 079 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT079
+                </div>
+
+                <h2>Traveller's Palm</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT079" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 080 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT080
+                </div>
+
+                <h2>Traveller's Palm</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT080" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 081 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT081
+                </div>
+
+                <h2>Traveller's Palm</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT081" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 082 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT082
+                </div>
+
+                <h2>Traveller's Palm</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT082" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 083 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT083
+                </div>
+
+                <h2>Traveller's Palm</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT083" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 084 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT084
+                </div>
+
+                <h2>Traveller's Palm</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT084" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 085 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT085
+                </div>
+
+                <h2>Neem</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT085" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 086 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT086
+                </div>
+
+                <h2>Neem</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT086" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 087 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT087
+                </div>
+
+                <h2>Neem</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT087" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 088 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT088
+                </div>
+
+                <h2>Jamun Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT088" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 089 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT089
+                </div>
+
+                <h2>Jamun Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT089" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 090 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT090
+                </div>
+
+                <h2>Jamun Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html-backup?id=KBT090" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 091 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT091
+                </div>
+
+                <h2>Kadam Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="html-backup?id=KBT091" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 092 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT092
+                </div>
+
+                <h2>Kadam Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="html-backup?id=KBT092" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 093 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT093
+                </div>
+
+                <h2>Kadam Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT093" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 094 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT094
+                </div>
+
+                <h2>Kadam Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT094" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 095 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT095
+                </div>
+
+                <h2>Kadam Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT095" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 096 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT096
+                </div>
+
+                <h2>Chinch Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT096" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 097 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT097
+                </div>
+
+                <h2>Karanj Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT097" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 098 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT098
+                </div>
+
+                <h2>Karanj Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT098" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 099 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT099
+                </div>
+
+                <h2>Parijaat Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT099" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 100 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT100
+                </div>
+
+                <h2>Parijaat Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT100" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 101 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT101
+                </div>
+
+                <h2>Parijaat Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT101" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 102 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT102
+                </div>
+
+                <h2>Sisso Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT102" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 103 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT103
+                </div>
+
+                <h2>Sisso Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT103" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 104 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT104
+                </div>
+
+                <h2>Ashoka Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT104" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 105 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT105
+                </div>
+
+                <h2>Ashoka Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT105" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 106 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT106
+                </div>
+
+                <h2>Ashoka Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT106" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+
+        <!-- KBT 107 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT107
+                </div>
+
+                <h2>Ashoka Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT107" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 108 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT108
+                </div>
+
+                <h2>Bhendi Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT108" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 109 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT109
+                </div>
+
+                <h2>Gorakh Chinch Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT109" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 110 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT110
+                </div>
+
+                <h2>Indian Beech Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT110" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 111 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT111
+                </div>
+
+                <h2>Nilgiri Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT111" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 112 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT112
+                </div>
+
+                <h2>Ashoka Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT112" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 113 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT113
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT113" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 114 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT114
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT114" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 115 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT115
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT115" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 116 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT116
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT116" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 117 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT117
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT117" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 118 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT118
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT118" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 119 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT119
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT119" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 120 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT120
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT120" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 121 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT121
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT121" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 122 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT122
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT122" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 123 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT123
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT123" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 124 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT124
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT124" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 125 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT125
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT125" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 126 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT126
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT126" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 127 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT127
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT127" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 128 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT128
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT128" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 129 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT129
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT129" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 130 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT130
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT130" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 131 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT131
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT131" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 132 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT132
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT132" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 133 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT133
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree.html?id=KBT133" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 134 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT134
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree-backup.html" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 135 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT135
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree-backup.html" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+        <!-- KBT 136 -->
+
+        <div class="tree-card">
+
+            <div
+                class="tree-image"
+                style="
+                background-image:
+                url('https://images.unsplash.com/photo-1531058020387-3be344556be6?auto=format&fit=crop&w=900&q=85');
+                "
+            ></div>
+
+            <div class="tree-content">
+
+                <div class="tree-number">
+                    KBT136
+                </div>
+
+                <h2>Kassod Tree</h2>
+
+                <div class="scientific-name">
+                    Saraca asoca
+                </div>
+
+                <p class="tree-description">
+                    A beautiful evergreen tree famous for
+                    its fragrant flowers and cultural
+                    significance in India.
+                </p>
+
+               <a href="tree-backup.html" class="view-button">
+    Explore Tree →
+</a>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <footer>
+
+        © 2026 QRoot • Scan a Tree, Know its Story 🌿
+
+    </footer>
+<script>
+
+    const searchInput = document.querySelector(".search-box input");
+    const treeCards = document.querySelectorAll(".tree-card");
+
+        searchInput.addEventListener("input", function () {
+
+        
+    const searchId = this.value.trim().toUpperCase();
+
+    treeCards.forEach(function (card) {
+
+        const treeId = card
+            .querySelector(".tree-number")
+            .textContent
+            .trim()
+            .toUpperCase();
+
+        if (searchId === "") {
+            card.style.display = "";
+        }
+        else if (treeId.startsWith(searchId)) {
+            card.style.display = "";
+        }
+        else {
+            card.style.display = "none";
+        }
+
+    });
+
+    let found = false;
+
+    treeCards.forEach(function (card) {
+
+        const treeId = card
+            .querySelector(".tree-number")
+            .textContent
+            .trim()
+            .toUpperCase();
+
+        if (treeId.startsWith(searchText)) {
+
+            found = true;
+
+            // Clone the existing tree card
+            const suggestion = card.cloneNode(true);
+
+            suggestion.classList.add("search-suggestion");
+
+            // Remove the Explore Tree button from suggestion
+            const button = suggestion.querySelector(".view-button");
+
+            if (button) {
+                button.remove();
+            }
+
+            // Clicking suggestion opens full profile
+            suggestion.addEventListener("click", function () {
+                window.location.href = "tree-backup.html?id=" + treeId;
+            });
+
+            suggestionBox.appendChild(suggestion);
+        }
+
+        // Hide original cards while searching
+        card.style.display = "none";
+
+    });
+
+    if (found) {
+        suggestionBox.style.display = "block";
+        suggestionBox.style.flexDirection = "column";
+    } else {
+        suggestionBox.style.display = "none";
+    }
+
+});
+
+</script>
+</body>
+</html>
